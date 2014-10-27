@@ -3,17 +3,17 @@ function SankeyHasMany() {
 
   // Internal data that is allowed to be accessed externally through a getter/setter method created below
   var my = {
-    margin: {top: 1, right: 1, bottom: 6, left: 1},
+    margin: {top: 20, right: 1, bottom: 6, left: 1},
     formatFloat: d3.format(",.0f"),
     color: d3.scale.ordinal().range(colorbrewer.Dark2[8]),
     nodeWidth: 15,
     nodePadding: 10,
     forceIterations: 10,
+    width: 960,
+    height: 700,
 
     // Set later in the process
     sankey: null,
-    width: null,
-    height: null,
     path: null,
     svg: null,
     links: null,
@@ -21,12 +21,10 @@ function SankeyHasMany() {
   };
 
   function init(selection) {
-    my.width = 960 - my.margin.left - my.margin.right;
-    my.height = 700 - my.margin.top - my.margin.bottom;
+    my.width = my.width - my.margin.left - my.margin.right;
+    my.height = my.height - my.margin.top - my.margin.bottom;
 
     selection.each(function(d, i) {
-      console.log(this, d, i);
-      //console.log(my.width, my.height);
       var data = d;
 
       my.sankey = d3.sankey()
@@ -43,18 +41,19 @@ function SankeyHasMany() {
       // Select the SVG from the `this` context if it exists
       my.svg = d3.select(this);
       my.svg.attr({
-        width: my.width,
-        height: my.height
+        width: my.width + my.margin.left + my.margin.right,
+        height: my.height + my.margin.top + my.margin.bottom
       });
 
       my.links = my.svg
           .append("g")
+          .attr("transform", "translate(" + my.margin.left + "," +
+                                            my.margin.top + ")")
           .selectAll(".link")
         .data(data.links)
           .enter()
           .append("path")
           .attr("class", "link")
-          //.each(function(d) { console.log(d); })
           .attr("d", my.path)
           .style("stroke-width", function(d) { return Math.max(1, d.dy); })
           .attr("stroke", function(d) { return my.color(d.source.name); })
@@ -62,11 +61,12 @@ function SankeyHasMany() {
 
       my.nodes = my.svg
           .append("g")
+          .attr("transform", "translate(" + my.margin.left + "," +
+                                            my.margin.top + ")")
           .selectAll(".node")
         .data(data.nodes)
           .enter()
           .append("g")
-          //.each(function(d) { console.log(d); })
           .attr("class", "node")
           .attr("transform", function(d) {
             return "translate(" + d.x + "," + d.y + ")";
@@ -79,7 +79,9 @@ function SankeyHasMany() {
               .on("drag", dragMove));
 
       my.links.append("title").text(function(d) {
-        return d.source.name + " → " + d.target.name + "\n" + my.formatFloat(d.value);
+        return d.source.name +
+          " → " + d.target.name +
+          "\nNo.: " + my.formatFloat(d.value);
       });
 
       my.nodes.append("rect")
@@ -110,23 +112,22 @@ function SankeyHasMany() {
     my.links.attr("d", my.path);
   }
 
+  // attr_accessor for JS
+  // Get attr with .attr();
+  // Set attr with .attr(val).attr2(val2);
+  function attr_accessor(attr) {
+    function build_accessor(val) {
+      if (!arguments.length) return my[attr];
+      my[attr] = val;
+      return init;
+    }
+    return build_accessor;
+  }
+
+  // Create all the getters/setters for vars in `my`
+  for (var key in my) {
+    init[key] = attr_accessor(key);
+  }
+
   return init;
 }
-
-var sankeyBass = SankeyHasMany(),
-    sankeySake = SankeyHasMany();
-
-d3.json("sake.json", function(data1) {
-  var svg = d3.select("#sake").append("svg");
-  svg.datum(data1).call(sankeySake);
-});
-
-d3.json("bass.json", function(data1) {
-  var svg = d3.select("#bass").append("svg");
-  svg.datum(data1).call(sankeyBass);
-});
-
-//d3.json("sake.json", function(data2) {
-  //var svg = d3.select("#sake").append("svg");
-  //svg.datum(data2).call(sankeySake);
-//});

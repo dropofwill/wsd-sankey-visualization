@@ -1,8 +1,10 @@
-@import url(http://fonts.googleapis.com/css?family=Oswald|Merriweather+Sans:400,400italic,800,800italic);
+@import url(http://fonts.googleapis.com/css?family=Oswald|Merriweather:300,300italic,800,800italic);
 
 body {
-  font-family: "Merriweather Sans", sans-serif;
-  font-weight: 400;
+  font-family: "Merriweather", sans-serif;
+  font-weight: 300;
+  max-width: 980px;
+  margin: 0 auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -10,20 +12,34 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
 }
 
-.group text {
+.figure {
+  width: 33%;
+  min-width: 200px;
+  margin: 20px;
+  float: right;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+
+text {
   font-size: 11px;
   pointer-events: none;
 }
+
 .group path {
   stroke: #000;
 }
+
 path.chord {
   stroke-width: 0;
   fill-opacity: 1;
 }
 
-#chart {
-  height: 500px;
+.chart {
+  margin: 5em 0;
 }
 
 .node rect {
@@ -37,7 +53,7 @@ path.chord {
   pointer-events: none;
   text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 0 1px #fff;
   font-size: 14px;
-  font-family: "Merriweather Sans", sans-serif;
+  font-family: "Merriweather", sans-serif;
 }
 
 .link {

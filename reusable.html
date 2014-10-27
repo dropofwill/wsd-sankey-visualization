@@ -3,21 +3,137 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="theme.css">
-  <title>Sankey Diagram of Decision List applied to the WSD Problem</title>
+  <title>Sankey Diagram of Rule Distributions in a Decision List Algorithm Applied to the Word Sense Disambiguation Problem</title>
 </head>
 
 <body>
-  <h1>Sankey Diagram of Decision List Rule Application to the Word Sense Disambiguation Problem</h1>
+  <h1>Sankey Diagram of a Decision List's Rule Distributions when Applied to the Word Sense Disambiguation Problem</h1>
 
-  <div id="bass">
+  <p>For my Natural Language Processing (NLP) class we recently approached the problem of Word Sense Disambiguation (WSD) from a Machine Learning (ML) perspective (we also looked at others, including lookup approaches like Lesk), using the simple, but quite effective, decision list algorithm.</p>
+
+  <p>The WSD task is determining which ambiguous meaning of a word is intended, usually based on the context, e.g. <em>play </em>bass<em> guitar</em> versus <em>caught a largemouth </em>bass.</p>
+
+  <p>In order to accomplish this we look at the words surrounding the text looking for hints like part of speech (which can be derived from a pre-trained tagger) and word, so for example a rule could be <em>+1 word is guitar</em> or <em>-2 word is a common noun (NN)</em>, where +/- k is relative to the ambiguous word in question.</p>
+
+  <p>From here we go through the entire training <em>corpus</em> creating a conditional probability distribution of all possible rules with the appropriate sense marked (using the notation <em>word</em> and <em>word*</em> for the two senses). With the distribution of rules we can than easily rank their effectiveness using the <strong>log likelihood formula</strong> given below:</p>
+
+  <br/>
+  <p>
+    $$
+      \left|{\log_2{\frac{Pr(sense \mid rule)}{Pr(sense* \mid rule)}}}\right|
+    $$
+  </p>
+  <br/>
+
+  <p>The idea here is that rules that are equally common across the senses don't give us any real information so they'll get low likelihoods (e.g. determiners like <em>the</em>), whereas ones that occur frequently with just one sense get high likelihoods (e.g. specific content words like <em>guitar</em>).</p>
+
+  <p>Given this list of rules with their relative ranks we can sort them by log likelihood. This is why we took the absolute value before, because rules weighted towards sense* will be negative and we want to sort by magnitude. Using the algorithm is as simple as running a sample sentence through the list of rules accepting the first one to find a match.</p>
+
+<pre class="figure">
+      |  *    |         |  *    |
+      |  b  b |         |  s  s |
+      |  a  a |         |  a  a |
+      |  s  s |         |  k  k |
+      |  s  s |         |  e  e |
+------+-------+   ------+-------+
+*bass |<40> 4 |   *sake | <3> 3 |
+ bass |  4<52>|    sake |   <94>|
+------+-------+   ------+-------+
+(row = reference, col = response)
+
+Confusion matrices for both cases. The rows are what the answers should have been, columns are what the algorithm chose, so choices along the diagonal are correct.
+</pre>
+
+  <p>Usually the results of the algorithm on an untouched test corpus are reported as a confusion matrix or histogram, with some scores like error reduction over baseline or F-scores. While these are useful to understanding the performance of the algorithm, it does little to help you understand why it performs that way. Only the histogram gives you any idea about the data distribution and that's the only thing it does.</p>
+
+  <p>That's where the Sankey diagram comes in, traditionally these sort of diagrams are used to show how some distribution changes over time or distance. While in this case time is not particularly meaningful (the algorithm can train/test thousands of examples in a couple of seconds), there is a linear, step-by-step process at work and that's where a flow diagram can be useful.</p>
+
+  <p>What I decided on for the final version was a three step process: rule distribution per word sense, likelihood distribution per rule (binned to integers), and finally accuracy distribution per likelihood. Here are the two final diagrams:</p>
+
+  <div id="bass" class="chart">
   </div>
 
-  <div id="sake">
+  <div id="sake" class="chart">
   </div>
+
+  <p><em>Note:</em> you can hover over the links to see the exact numbers and you can drag the nodes around to get a better view of the various connections</p>
+  <hr>
+
+  <p>The most obvious thing is just how many low likelihoods there are in both cases (incidentally this is because the likelihoods of rules with just 1 example end up 3 for the bass case and 4 for the sake case), but also how few times they actually get applied.</p>
+
+  <p>One major assumption in this algorithm is that higher likelihood will have better results, how good is this assumption? We can't tell that from the confusion matrix, but with the Sankey diagram every incorrect answer can be traced back to the rule's likelihood that made a mistake. Here we can see that no rule with a likelihood greater than 5 ever makes a mistake in both cases, which shows that the assumption is not only pretty good, but also consistent across use cases.</p>
+
+  <p>Another observation you might make is how few rules we have for the sake* case and also how low in the decision list those that exist are.</p>
 
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
+  <!--The D3 plugin for Sankey diagrams-->
   <script type="text/javascript" src="sankey.js" charset="utf-8"></script>
+  <!--My modifications to the Sankey plugin for uneven distributions (i.e. has many relationships)-->
   <script type="text/javascript" src="sankey_has_many.js"></script>
+  <!-- Render nice latex formulas -->
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+
+  <script type="text/javascript">
+      var sankeyBass = SankeyHasMany(),
+          sankeySake = SankeyHasMany(),
+          width = 960,
+          height = 650,
+          halfWidth = width / 2;
+
+      sankeyBass
+        .width(width)
+        .height(height)
+        ;
+
+      sankeySake
+        .width(width)
+        .height(height)
+        ;
+
+      d3.json("bass.json", function(data1) {
+        var svg = d3.select("#bass").append("svg");
+        svg.datum(data1).call(sankeyBass);
+
+        svg.append("text")
+          .attr({ "x": 0, "y": 10,
+                  "dx": 0, "dy": 0})
+          .text("Rule Distributions per Sense");
+
+        svg.append("text")
+          .attr({ "x": halfWidth, "y": 10,
+                  "dx": 0, "dy": 0,
+                  "text-anchor": "middle" })
+          .text("Log Likelihood");
+
+        svg.append("text")
+          .attr({ "x": width - 10, "y": 10,
+                  "dx": 0, "dy": 0,
+                  "text-anchor": "end" })
+          .text("Accuracy per Test Case");
+      });
+
+      d3.json("sake.json", function(data1) {
+        var svg = d3.select("#sake").append("svg");
+        svg.datum(data1).call(sankeySake);
+
+        svg.append("text")
+          .attr({ "x": 0, "y": 10,
+                  "dx": 0, "dy": 0})
+          .text("Rule Distributions per Sense");
+
+        svg.append("text")
+          .attr({ "x": halfWidth, "y": 10,
+                  "dx": 0, "dy": 0,
+                  "text-anchor": "middle" })
+          .text("Log Likelihood");
+
+        svg.append("text")
+          .attr({ "x": width - 10, "y": 10,
+                  "dx": 0, "dy": 0,
+                  "text-anchor": "end" })
+          .text("Accuracy per Test Case");
+      });
+  </script>
 </body>
 </html>

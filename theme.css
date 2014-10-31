@@ -5,6 +5,7 @@ body {
   font-weight: 300;
   max-width: 980px;
   margin: 0 auto;
+  padding: 1em;
 }
 
 h1, h2, h3, h4, h5, h6 {

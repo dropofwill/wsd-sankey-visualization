@@ -13,14 +13,14 @@
 
   <p>The WSD task is determining which ambiguous meaning of a word is intended, usually based on the context, e.g. <em>play </em>bass<em> guitar</em> versus <em>caught a largemouth </em>bass.</p>
 
-  <p>In order to accomplish this we look at the words surrounding the text looking for hints like part of speech (which can be derived from a pre-trained tagger) and word, so for example a rule could be <em>+1 word is guitar</em> or <em>-2 word is a common noun (NN)</em>, where +/- k is relative to the ambiguous word in question.</p>
+  <p>In order to accomplish this we look at the words surrounding the text looking for hints like part of speech (which can be derived from a pre-trained tagger) and words, so for example a rule could be <em>+1 word is guitar</em> or <em>-2 word is a common noun (NN)</em>, where +/- k is relative to the ambiguous word in question.</p>
 
   <p>From here we go through the entire training <em>corpus</em> creating a conditional probability distribution of all possible rules with the appropriate sense marked (using the notation <em>word</em> and <em>word*</em> for the two senses). With the distribution of rules we can than easily rank their effectiveness using the <strong>log likelihood formula</strong> given below:</p>
 
   <br/>
   <p>
     $$
-      \left|{\log_2{\frac{Pr(sense \mid rule)}{Pr(sense* \mid rule)}}}\right|
+      \left|{\log_2{\frac{Pr(word \mid rule)}{Pr(word* \mid rule)}}}\right|
     $$
   </p>
   <br/>
@@ -44,9 +44,9 @@
 Confusion matrices for both cases. The rows are what the answers should have been, columns are what the algorithm chose, so choices along the diagonal are correct.
 </pre>
 
-  <p>Usually the results of the algorithm on an untouched test corpus are reported as a confusion matrix or histogram, with some scores like error reduction over baseline or F-scores. While these are useful to understanding the performance of the algorithm, it does little to help you understand why it performs that way. Only the histogram gives you any idea about the data distribution and that's the only thing it does.</p>
+  <p>Usually the results of the algorithm on an untouched test corpus are reported as a confusion matrix or histogram, along with some raw stats like error reduction over baseline or F-scores. While these are useful to understanding the performance of the algorithm, it does little to help you understand why it performs that way. Only the histogram gives you any idea about the data distribution and that's the only thing it does.</p>
 
-  <p>That's where the Sankey diagram comes in, traditionally these sort of diagrams are used to show how some distribution changes over time or distance. While in this case time is not particularly meaningful (the algorithm can train/test thousands of examples in a couple of seconds), there is a linear, step-by-step process at work and that's where a flow diagram can be useful.</p>
+  <p>That's where my Sankey diagram comes in, traditionally these sort of diagrams are used to show how some distribution changes over time or distance. While in this case time is not particularly meaningful (the algorithm can train/test thousands of examples in a couple of seconds), there is a linear, step-by-step process at work and that's where a flow diagram can be useful.</p>
 
   <p>What I decided on for the final version was a three step process: rule distribution per word sense, likelihood distribution per rule (binned to integers), and finally accuracy distribution per likelihood. Here are the two final diagrams:</p>
 
@@ -59,11 +59,16 @@ Confusion matrices for both cases. The rows are what the answers should have bee
   <p><em>Note:</em> you can hover over the links to see the exact numbers and you can drag the nodes around to get a better view of the various connections</p>
   <hr>
 
-  <p>The most obvious thing is just how many low likelihoods there are in both cases (incidentally this is because the likelihoods of rules with just 1 example end up 3 for the bass case and 4 for the sake case), but also how few times they actually get applied.</p>
+  <p>The most obvious observation from this visualization is just how many low likelihoods there are in both cases (incidentally this is because the likelihoods of rules with just 1 example end up 3 for the bass case and 4 for the sake case), but also how few times they actually get applied.</p>
 
   <p>One major assumption in this algorithm is that higher likelihood will have better results, how good is this assumption? We can't tell that from the confusion matrix, but with the Sankey diagram every incorrect answer can be traced back to the rule's likelihood that made a mistake. Here we can see that no rule with a likelihood greater than 5 ever makes a mistake in both cases, which shows that the assumption is not only pretty good, but also consistent across use cases.</p>
 
-  <p>Another observation you might make is how few rules we have for the sake* case and also how low in the decision list those that exist are.</p>
+  <p>Another takeaway is how few rules we have for the sake* case and also how low in the decision list those that exist are. This shows an non-obvious limitation of the algorithm, it needs similar distributions of data. Even though this algorithm performed "better" in overall accuracy then the bass case, it still only got 50% of the sake as in wine cases correct.</p>
+
+  <img src="./first-attempt.svg" alt="Reign-Gold tree as a first attempt" style="width: 66%; float: right" />
+
+  <p>My first attempt (incomplete version shown on the right) was the straight forward Reign-Gold tree diagram with labelled nodes. This admittedly shows the exact numbers immediately (without hover over), but it loses the high level visual cues of size and is not interpreted necessarily as a temporal flow like the Sankey approach.
+
 
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="http://d3js.org/colorbrewer.v1.min.js"></script>

@@ -63,11 +63,12 @@ Confusion matrices for both cases. The rows are what the answers should have bee
 
   <p>One major assumption in this algorithm is that higher likelihood will have better results, how good is this assumption? We can't tell that from the confusion matrix, but with the Sankey diagram every incorrect answer can be traced back to the rule's likelihood that made a mistake. Here we can see that no rule with a likelihood greater than 5 ever makes a mistake in both cases, which shows that the assumption is not only pretty good, but also consistent across use cases.</p>
 
-  <p>Another takeaway is how few rules we have for the sake* case and also how low in the decision list those that exist are. This shows an non-obvious limitation of the algorithm, it needs similar distributions of data. Even though this algorithm performed "better" in overall accuracy then the bass case, it still only got 50% of the sake as in wine cases correct.</p>
 
   <img src="./first-attempt.svg" alt="Reign-Gold tree as a first attempt" style="width: 66%; float: right" />
 
-  <p>My first attempt (incomplete version shown on the right) was the straight forward Reign-Gold tree diagram with labelled nodes. This admittedly shows the exact numbers immediately (without hover over), but it loses the high level visual cues of size and is not interpreted necessarily as a temporal flow like the Sankey approach.
+  <p>Another takeaway is how few rules we have for the sake* case and also how low in the decision list those that exist are. This shows an non-obvious limitation of the algorithm, it needs similar distributions of data. Even though this algorithm performed "better" in overall accuracy then the bass case, it still only got 50% of the sake as in wine cases correct.</p>
+
+  <p>My first attempt (incomplete version shown to the <em>right</em>) was the straight forward Reign-Gold tree diagram with labelled nodes. This admittedly shows the exact numbers immediately (without hover over), but it loses the high level visual cues of size and is not interpreted necessarily as a temporal flow like the Sankey approach.
 
 
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>

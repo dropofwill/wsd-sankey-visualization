@@ -10,7 +10,11 @@ Uses the D3 Sankey layout plugin, which [can be found here](https://github.com/d
 For my Natural Language Processing class we recently approached the problem of Word Sense Disambiguation from a machine learning perspective (among others, including lookup approaches like Lesk), using the simple, but quite effective, decision list algorithm.
 
 Concept:
+
 • Quickly explain the Word Sense Disambiguation problem
+
 • And the Decision List approach
+
 • Introduce confusion matrix, but this is missing the pipeline aspect of the approach
+
 • In comes some sort of hierarchal flow that shows how the rules progress through "time"
